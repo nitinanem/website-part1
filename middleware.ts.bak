@@ -1,0 +1,31 @@
+import { auth } from '@/auth'
+import { NextResponse } from 'next/server'
+
+export default auth((req) => {
+  const { nextUrl, auth: session } = req
+  const isLoggedIn = !!session?.user
+  const role = session?.user?.role
+
+  // Protect patient dashboard — requires PATIENT or ADMIN role
+  if (nextUrl.pathname.startsWith('/dashboard')) {
+    if (!isLoggedIn) {
+      return NextResponse.redirect(new URL('/login?callbackUrl=/dashboard', nextUrl))
+    }
+  }
+
+  // Protect clinic portal — requires CLINICIAN or ADMIN role
+  if (nextUrl.pathname.startsWith('/clinic')) {
+    if (!isLoggedIn) {
+      return NextResponse.redirect(new URL('/login?callbackUrl=/clinic', nextUrl))
+    }
+    if (role !== 'CLINICIAN' && role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/?error=unauthorized', nextUrl))
+    }
+  }
+
+  return NextResponse.next()
+})
+
+export const config = {
+  matcher: ['/dashboard/:path*', '/clinic/:path*'],
+}

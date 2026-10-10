@@ -1,0 +1,33 @@
+name: swastik-joint-care
+region: nyc3
+
+services:
+  - name: swastik-web
+    github:
+      branch: main
+      deploy_on_push: true
+      repo: <your-github-username>/Swastik-main
+    environment_slug: node-js
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    run_command: npm run start
+    build_command: npx prisma generate && npx prisma db push --accept-data-loss && npm run build
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_AND_BUILD_TIME
+        value: ${swastik-db.DATABASE_URL}
+      - key: GEMINI_API_KEY
+        scope: RUN_AND_BUILD_TIME
+        value: "" # Add your Gemini key in the DigitalOcean dashboard
+      - key: NEXTAUTH_SECRET
+        scope: RUN_AND_BUILD_TIME
+        value: "generate-a-random-secret-key"
+      - key: NEXTAUTH_URL
+        scope: RUN_TIME
+        value: "${APP_URL}"
+
+databases:
+  - name: swastik-db
+    engine: PG
+    version: "12"
+    production: false # Sets up a dev database which is very fast and cheap to provision

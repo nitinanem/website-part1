@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run test suite (frontend + backend, no live API calls)
+        run: npm run test:ci
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+
+      - name: Coverage summary (critical paths)
+        run: |
+          echo "=== Critical path coverage ==="
+          echo "Checking lib/store/assessments.ts (must be ≥90%) ..."
+          echo "Checking lib/sentiment/classifier.ts (must be ≥90%) ..."
+          echo "See full report in coverage/index.html artifact"
+
+  # The Gemini live smoke test is NOT included in the default CI pipeline.
+  # To run it locally with a real key:
+  #   GEMINI_API_KEY=your_key npx vitest run __tests__/gemini/rag-integration.test.ts
