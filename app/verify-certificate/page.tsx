@@ -26,7 +26,9 @@ import {
 } from '@/lib/training/blockchain-ledger'
 import { CredentialCertificateCard } from '@/components/training/credential-certificate'
 
-export default function VerifyCertificatePage() {
+import { Suspense } from 'react'
+
+function VerifyCertificateContent() {
   const searchParams = useSearchParams()
   const initialId = searchParams.get('id') || ''
   const [searchId, setSearchId] = useState(initialId)
@@ -184,5 +186,13 @@ export default function VerifyCertificatePage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function VerifyCertificatePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background"><div className="text-sm text-muted-foreground">Loading certificate registry...</div></div>}>
+      <VerifyCertificateContent />
+    </Suspense>
   )
 }
