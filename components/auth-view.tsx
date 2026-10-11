@@ -435,9 +435,37 @@ export function AuthView({ onNavigate }: { onNavigate: (v: ViewState) => void })
                     </button>
                   </form>
 
-                  <p className="mt-4 text-center text-xs text-muted-foreground">
-                    Demo Accounts: aman.sharma@example.com (Patient@123)
-                  </p>
+                  <div className="mt-5 rounded-xl border border-dashed border-border/80 bg-muted/30 p-3 text-center">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">
+                      Demo Accounts (Click to Auto-fill):
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEmail('aman.sharma@example.com')
+                          setPassword('Patient@123')
+                          setMode('login')
+                          setError('')
+                        }}
+                        className="rounded-lg bg-background px-2.5 py-1 text-xs font-semibold text-primary shadow-xs border border-border hover:bg-secondary transition-colors cursor-pointer"
+                      >
+                        👤 Patient (Aman)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEmail('dr.sharma@jointcare.in')
+                          setPassword('Clinic@123')
+                          setMode('login')
+                          setError('')
+                        }}
+                        className="rounded-lg bg-background px-2.5 py-1 text-xs font-semibold text-primary shadow-xs border border-border hover:bg-secondary transition-colors cursor-pointer"
+                      >
+                        🩺 Doctor (Dr. Sharma)
+                      </button>
+                    </div>
+                  </div>
                 </>
               )}
             </div>

@@ -27,12 +27,14 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 12)
 
+    const targetRole = (role === 'STAFF' || role === 'DOCTOR' || role === 'CLINICIAN') ? 'CLINICIAN' : 'PATIENT'
+
     const user = await prisma.user.create({
       data: {
         name,
         email: normalizedEmail,
         password: hashedPassword,
-        role,
+        role: targetRole,
         emailVerified: null,
       },
     })
@@ -41,7 +43,7 @@ export async function POST(req: NextRequest) {
     let doctorId: string | undefined
 
     // Auto-create linked Patient profile
-    if (role === 'PATIENT') {
+    if (targetRole === 'PATIENT') {
       const patient = await prisma.patient.create({
         data: {
           userId: user.id,
@@ -57,7 +59,7 @@ export async function POST(req: NextRequest) {
         },
       })
       patientId = patient.id
-    } else if (role === 'CLINICIAN') {
+    } else if (targetRole === 'CLINICIAN') {
       const doctor = await prisma.doctor.create({
         data: {
           userId: user.id,
@@ -106,8 +108,12 @@ export async function POST(req: NextRequest) {
       }, 
       { status: 201 }
     )
-  } catch (err) {
-    console.error('[register]', err)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (err: any) {
+    console.error('[register error]', err)
+    const msg = err?.message || ''
+    if (msg.includes("Can't reach database server") || msg.includes('DATABASE_URL') || msg.includes('tenant/user') || msg.includes('P1001') || msg.includes('connect ECONNREFUSED')) {
+      return NextResponse.json({ error: 'Database connection error. Please verify your database configuration.' }, { status: 503 })
+    }
+    return NextResponse.json({ error: err?.message || 'Internal server error' }, { status: 500 })
   }
 }

@@ -99,8 +99,12 @@ export async function POST(req: NextRequest) {
     })
 
     return res
-  } catch (err) {
-    console.error('[POST /api/auth/login]', err)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (err: any) {
+    console.error('[POST /api/auth/login error]', err)
+    const msg = err?.message || ''
+    if (msg.includes("Can't reach database server") || msg.includes('DATABASE_URL') || msg.includes('tenant/user') || msg.includes('P1001') || msg.includes('connect ECONNREFUSED')) {
+      return NextResponse.json({ error: 'Database connection error. Please verify your database configuration.' }, { status: 503 })
+    }
+    return NextResponse.json({ error: err?.message || 'Internal server error' }, { status: 500 })
   }
 }
